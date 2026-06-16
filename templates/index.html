@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFSAR BIND TOOL</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --accent-blue: #00d2ff;
+            --accent-gold: #ffb703;
+            --btn-purple: #9d4edd;
+            --btn-green: #2a9d8f;
+            --btn-blue: #0284c7;
+            --btn-danger: #ef4444;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        body { margin: 0; padding: 15px; background-color: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', Tahoma, sans-serif; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { color: var(--accent-blue); font-size: 24px; text-transform: uppercase; margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .header h1 i { color: var(--accent-gold); }
+        .subtitle { color: var(--text-muted); font-size: 14px; }
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .card-title { color: var(--accent-blue); font-size: 16px; font-weight: 600; margin-top: 0; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; color: var(--text-muted); font-size: 13px; margin-bottom: 5px; }
+        input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #2e3a52; background-color: #0b0f19; color: white; font-size: 14px; box-sizing: border-box; }
+        input:focus { outline: none; border-color: var(--accent-blue); }
+        .action-btn { width: 100%; padding: 12px; border: none; border-radius: 6px; color: white; font-weight: 600; font-size: 14px; cursor: pointer; margin: 8px 0; display: flex; justify-content: center; align-items: center; gap: 8px; transition: transform 0.1s; }
+        .action-btn:active { transform: scale(0.98); }
+        .btn-purple { background-color: var(--btn-purple); }
+        .btn-green { background-color: var(--btn-green); }
+        .btn-blue { background-color: var(--btn-blue); }
+        .btn-danger { background-color: var(--btn-danger); }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; border-bottom: 1px dashed rgba(255, 255, 255, 0.05); }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: var(--text-muted); }
+        .info-value { color: white; font-weight: 500; }
+        .logger-box { background-color: #000; font-family: monospace; padding: 12px; border-radius: 6px; font-size: 12px; color: #00ff00; height: 120px; overflow-y: auto; border: 1px solid #222; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fas fa-bolt"></i> AFSAR BIND TOOL <i class="fas fa-bolt"></i></h1>
+        <div class="subtitle">100% Safe & Direct Garena Panel</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><i class="fas fa-key"></i> Session Manager</div>
+        <div class="form-group">
+            <label>Access Token</label>
+            <input type="text" id="token-input" placeholder="Paste your Garena Access Token here...">
+        </div>
+        <button class="action-btn btn-purple" onclick="loadAccountInfo()">
+            <i class="fas fa-sync-alt"></i> Load Account Info
+        </button>
+        <button class="action-btn btn-danger" onclick="clearSession()">
+            <i class="fas fa-trash-alt"></i> Clear Session
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><i class="fas fa-user"></i> Account Details</div>
+        <div class="info-row"><span class="info-label">UID:</span><span class="info-value" id="prof-uid">-</span></div>
+        <div class="info-row"><span class="info-label">Nickname:</span><span class="info-value" id="prof-nick">-</span></div>
+        <div class="info-row"><span class="info-label">Region:</span><span class="info-value" id="prof-region">-</span></div>
+        <div class="info-row"><span class="info-label">Current Email:</span><span class="info-value" id="bind-current" style="color: var(--accent-gold);">-</span></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><i class="fas fa-shield-alt"></i> Security Code Bypass (Change Gmail)</div>
+        
+        <div class="form-group">
+            <label>6-Digit Security Code</label>
+            <input type="text" id="sec-code-input" placeholder="Enter Security Code">
+        </div>
+        <button class="action-btn btn-blue" onclick="verifyCode()">
+            <i class="fas fa-unlock-alt"></i> Verify Security Code
+        </button>
+
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 15px 0;">
+
+        <div class="form-group">
+            <label>New Email Address</label>
+            <input type="email" id="new-email-input" placeholder="Enter New Email">
+        </div>
+        <button class="action-btn btn-green" onclick="sendOtp()">
+            <i class="fas fa-paper-plane"></i> Send OTP to New Email
+        </button>
+
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 15px 0;">
+
+        <div class="form-group">
+            <label>Enter OTP</label>
+            <input type="text" id="otp-input" placeholder="Enter OTP received on new email">
+        </div>
+        <button class="action-btn btn-purple" onclick="confirmRebind()">
+            <i class="fas fa-check-circle"></i> Confirm Rebind
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><i class="fas fa-terminal"></i> System Status</div>
+        <div class="logger-box" id="logger">
+            [System] Online and ready. Waiting for Access Token...
+        </div>
+    </div>
+
+    <script>
+        const logger = document.getElementById('logger');
+        const tokenInput = document.getElementById('token-input');
+
+        // लॉग मैसेज प्रिंट करने का फंक्शन
+        function logMessage(msg, type='info') {
+            const time = new Date().toLocaleTimeString();
+            let color = '#00ff00'; // Green (Success/Info)
+            if(type === 'error') color = '#ef4444'; // Red (Error)
+            if(type === 'warn') color = '#ffb703'; // Yellow (Warning)
+            
+            logger.innerHTML += `<br><span style="color: ${color}">[${time}] ${msg}</span>`;
+            logger.scrollTop = logger.scrollHeight;
+        }
+
+        // Backend API को कॉल करने का कॉमन फंक्शन
+        async function callAPI(endpoint, data) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                logMessage(`Server Connection Error!`, 'error');
+                return { status: 'error', message: 'Backend not responding.' };
+            }
+        }
+
+        // बटन 1: Load Account Info
+        async function loadAccountInfo() {
+            const token = tokenInput.value.trim();
+            if(!token) return logMessage('Error: Access Token is required!', 'error');
+            
+            logMessage('Connecting to Garena Servers... Fetching Profile...');
+            const res = await callAPI('/api/load_info', { token: token });
+            
+            if(res.status === 'success') {
+                logMessage(res.message);
+                document.getElementById('prof-uid').innerText = res.data.uid;
+                document.getElementById('prof-nick').innerText = res.data.nickname;
+                document.getElementById('prof-region').innerText = res.data.region;
+                document.getElementById('bind-current').innerText = res.data.email;
+            } else {
+                logMessage(res.message, 'error');
+            }
+        }
+
+        // बटन 2: Verify Security Code
+        async function verifyCode() {
+            const token = tokenInput.value.trim();
+            const code = document.getElementById('sec-code-input').value.trim();
+            
+            if(!token) return logMessage('Error: Access Token is required!', 'error');
+            if(!code) return logMessage('Error: Please enter 6-digit Security Code!', 'error');
+
+            logMessage(`Verifying Security Code...`);
+            const res = await callAPI('/api/verify_code', { token: token, code: code });
+            
+            if(res.status === 'success') {
+                logMessage(res.message);
+            } else {
+                logMessage(res.message, 'error');
+            }
+        }
+
+        // बटन 3: Send OTP
+        async function sendOtp() {
+            const token = tokenInput.value.trim();
+            const email = document.getElementById('new-email-input').value.trim();
+            
+            if(!token) return logMessage('Error: Access Token is required!', 'error');
+            if(!email) return logMessage('Error: Please enter New Email Address!', 'error');
+
+            logMessage(`Requesting OTP for ${email}...`);
+            const res = await callAPI('/api/send_otp', { token: token, email: email });
+            
+            if(res.status === 'success') {
+                logMessage(res.message);
+            } else {
+                logMessage(res.message, 'error');
+            }
+        }
+
+        // बटन 4: Confirm Rebind
+        async function confirmRebind() {
+            const token = tokenInput.value.trim();
+            const email = document.getElementById('new-email-input').value.trim();
+            const otp = document.getElementById('otp-input').value.trim();
+            
+            if(!token) return logMessage('Error: Access Token is required!', 'error');
+            if(!email || !otp) return logMessage('Error: Email and OTP are required!', 'error');
+
+            logMessage(`Confirming Rebind with OTP...`);
+            const res = await callAPI('/api/confirm_rebind', { token: token, email: email, otp: otp });
+            
+            if(res.status === 'success') {
+                logMessage(res.message);
+                document.getElementById('bind-current').innerText = email;
+            } else {
+                logMessage(res.message, 'error');
+            }
+        }
+
+        // बटन 5: Clear Session
+        function clearSession() {
+            document.querySelectorAll('input').forEach(input => input.value = '');
+            document.querySelectorAll('.info-value').forEach(span => span.innerText = '-');
+            logMessage('Session Cleared. Ready for new token.', 'warn');
+        }
+    </script>
+</body>
+  </html>
+  

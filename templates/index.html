@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFSAR BIND TOOL PRO</title>
+    <style>
+        :root { --bg: #1a1a2e; --box: #16213e; --primary: #e94560; --text: #fff; --output: #0f3460; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: var(--text); padding: 15px; margin: 0; }
+        .container { max-width: 500px; margin: auto; background: var(--box); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { text-align: center; color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--output); padding-bottom: 10px; }
+        .main-input { width: 95%; padding: 12px; border-radius: 6px; border: 1px solid var(--primary); background: #fff; color: #000; font-weight: bold; margin-bottom: 15px; }
+        .tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
+        .tab-btn { flex: 1 1 30%; padding: 8px; background: var(--output); color: var(--text); border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .tab-btn.active { background: var(--primary); font-weight: bold; }
+        .section { display: none; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px dashed var(--output); }
+        .section.active { display: block; }
+        input { width: 95%; padding: 10px; margin: 8px 0; border-radius: 4px; border: none; background: #eee; color: #333; }
+        button.action-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 5px; }
+        button.action-btn:hover { background: #d1304b; }
+        button.half-btn { width: 48%; display: inline-block; padding: 10px; font-size: 13px; }
+        .console { background: #000; color: #0f0; padding: 15px; margin-top: 20px; border-radius: 6px; font-family: monospace; font-size: 13px; white-space: pre-wrap; height: 200px; overflow-y: auto; border-left: 4px solid var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🌟 AFSAR WEB TOOL PRO 🌟</h2>
+    
+    <label>Main Access Token / JWT Token:</label>
+    <input type="text" id="global_token" class="main-input" placeholder="अपना टोकन यहाँ पेस्ट करें...">
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('tab-info')">Info</button>
+        <button class="tab-btn" onclick="showTab('tab-bind')">Bind</button>
+        <button class="tab-btn" onclick="showTab('tab-change')">Change</button>
+        <button class="tab-btn" onclick="showTab('tab-unbind')">Unbind</button>
+        <button class="tab-btn" onclick="showTab('tab-history')">History</button>
+    </div>
+
+    <!-- 1. Info Tab -->
+    <div id="tab-info" class="section active">
+        <button class="action-btn" style="background:#00bcd4;" onclick="callAPI('/api/player_info', {}, 'Player Info Fetch Successfully!')">👤 1. Get Player Profile</button>
+        <button class="action-btn" onclick="callAPI('/api/bind_info', {}, 'Bind Info Fetch Successfully!')">ℹ️ 2. Check Bind Info</button>
+        <button class="action-btn" onclick="callAPI('/api/bound_platforms', {}, 'Linked Accounts Fetch Successfully!')">🔗 3. Check Linked Accounts</button>
+        <button class="action-btn" onclick="callAPI('/api/cancel_bind', {}, 'Bind Request Cancelled Successfully!')" style="background:#ff9800;">🚫 4. Cancel Any Bind Request</button>
+    </div>
+
+    <!-- 2. Bind Email Tab -->
+    <div id="tab-bind" class="section">
+        <input type="email" id="bind_email" placeholder="नया Email डालें">
+        <button class="action-btn" onclick="callAPI('/api/send_otp', {email: getVal('bind_email')}, 'OTP Sent Successfully!')">📧 Send OTP</button>
+        <input type="text" id="bind_otp" placeholder="Email पर आया OTP डालें">
+        <input type="text" id="bind_sec" placeholder="नया 6-Digit Security Code बनाएं">
+        <button class="action-btn" style="background: #4caf50;" onclick="smartBind()">🔒 Verify & Bind</button>
+    </div>
+
+    <!-- 3. Change Email Tab -->
+    <div id="tab-change" class="section">
+        <label style="font-size: 13px; color: #ffeb3b;">STEP 1: पुरानी Identity Verify करें</label>
+        <input type="email" id="c_old_email" placeholder="पुराना (Bound) Email डालें">
+        <button class="action-btn half-btn" onclick="callAPI('/api/send_otp', {email: getVal('c_old_email')}, 'Old Email OTP Sent!')">Send OTP (Old)</button>
+        <input type="text" id="c_old_otp" placeholder="पुराना OTP">
+        <input type="text" id="c_sec_code" placeholder="या Security Code डालें">
+        
+        <hr style="border-color: #333; margin: 15px 0;">
+        <label style="font-size: 13px; color: #4caf50;">STEP 2: नया Email जोड़ें</label>
+        <input type="email" id="c_new_email" placeholder="नया Email डालें">
+        <button class="action-btn half-btn" onclick="callAPI('/api/send_otp', {email: getVal('c_new_email')}, 'New Email OTP Sent!')">Send OTP (New)</button>
+        <input type="text" id="c_new_otp" placeholder="नया OTP">
+        <button class="action-btn" style="background: #2196f3; margin-top:15px;" onclick="smartChange()">🔄 Verify & Change Email</button>
+    </div>
+
+    <!-- 4. Unbind Email Tab -->
+    <div id="tab-unbind" class="section">
+        <label style="font-size: 12px; color: #aaa;">OTP या Security Code में से कोई एक डालें:</label>
+        <input type="email" id="unbind_email" placeholder="जुड़ा हुआ (Bound) Email डालें">
+        <button class="action-btn" onclick="callAPI('/api/send_otp', {email: getVal('unbind_email')}, 'OTP Sent!')">📧 Send OTP (Old Email)</button>
+        <input type="text" id="unbind_otp" placeholder="OTP (अगर OTP से हटाना है)">
+        <input type="text" id="unbind_sec" placeholder="Security Code (अगर सीधे हटाना है)">
+        <button class="action-btn" style="background: #e91e63;" onclick="smartUnbind()">🗑️ Verify & Unbind</button>
+    </div>
+
+    <!-- 5. History Tab -->
+    <div id="tab-history" class="section">
+        <button class="action-btn" onclick="callAPI('/api/login_history', {}, 'History Fetched Successfully!')">🕒 Get Login History</button>
+        <hr style="border-color: #333;">
+        <input type="text" id="eat_url" placeholder="EAT URL डालें">
+        <button class="action-btn half-btn" onclick="callAPI('/api/eat_to_token', {eat: getVal('eat_url')}, 'Token Extracted!')">Extract Token</button>
+    </div>
+
+    <div class="console" id="console">Result will appear here...</div>
+</div>
+
+<script>
+    function showTab(tabId) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+    function getVal(id) { return document.getElementById(id).value; }
+    function logOutput(msg) { document.getElementById("console").innerText = msg + "\n\n" + document.getElementById("console").innerText; }
+
+    // Smart API Caller with Notification System
+    async function callAPI(endpoint, extraData = {}, successMessage = null) {
+        const token = getVal('global_token');
+        if(!token && endpoint !== '/api/eat_to_token') { 
+            alert("❌ ERROR: सबसे पहले ऊपर Access Token डालें!"); 
+            return null; 
+        }
+        
+        logOutput(`[Processing] ${endpoint} ...`);
+        try {
+            const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token, ...extraData }) });
+            const data = await response.json();
+            logOutput(JSON.stringify(data, null, 2));
+
+            // NOTIFICATION LOGIC
+            if(data.result === 0) {
+                if(successMessage) alert("✅ SUCCESS: " + successMessage);
+                return data;
+            } else if (data.result !== undefined) {
+                let err = data.error || "Unknown Error";
+                alert("❌ FAILED: " + err + " (Code: " + data.result + ")");
+                return null;
+            }
+            return data;
+        } catch (error) { 
+            alert("❌ ERROR: " + error.message);
+            return null; 
+        }
+    }
+
+    async function smartBind() {
+        const e = getVal('bind_email'), o = getVal('bind_otp'), s = getVal('bind_sec');
+        if(!e || !o || !s) return alert("❌ ERROR: Email, OTP और Security Code डालें!");
+        
+        const v = await callAPI('/api/verify_otp', {email: e, otp: o});
+        if(v && v.verifier_token) {
+            const b = await callAPI('/api/bind_email', {email: e, v_token: v.verifier_token, sec_code: s});
+            if(b && b.result === 0) alert("✅ BIND SUCCESSFULLY!");
+        } else {
+            alert("❌ OTP Verification Failed!");
+        }
+    }
+
+    async function smartChange() {
+        const oldE = getVal('c_old_email'), oldO = getVal('c_old_otp'), secC = getVal('c_sec_code');
+        const newE = getVal('c_new_email'), newO = getVal('c_new_otp');
+
+        if(!oldE || !newE || !newO) return alert("❌ ERROR: Old Email, New Email और New OTP ज़रूरी हैं!");
+        if(!oldO && !secC) return alert("❌ ERROR: Old OTP या Security Code डालें!");
+
+        const id_res = await callAPI('/api/verify_identity', { email: oldE, otp: oldO, sec_code: secC });
+        if(!id_res || !id_res.identity_token) return alert("❌ Identity Verification Failed! (Wrong Security Code or OTP)");
+        
+        const v_res = await callAPI('/api/verify_otp', { email: newE, otp: newO });
+        if(!v_res || !v_res.verifier_token) return alert("❌ New OTP Verification Failed!");
+
+        const c_res = await callAPI('/api/change_email', { id_token: id_res.identity_token, new_email: newE, v_token: v_res.verifier_token });
+        if(c_res && c_res.result === 0) alert("✅ EMAIL CHANGED SUCCESSFULLY!");
+    }
+
+    async function smartUnbind() {
+        const e = getVal('unbind_email'), o = getVal('unbind_otp'), s = getVal('unbind_sec');
+        if(!e) return alert("❌ ERROR: Email डालें!");
+        if(!o && !s) return alert("❌ ERROR: OTP या Security Code डालें!");
+        
+        const id = await callAPI('/api/verify_identity', {email: e, otp: o, sec_code: s});
+        if(id && id.identity_token) {
+            const u = await callAPI('/api/unbind_email', {id_token: id.identity_token});
+            if(u && u.result === 0) alert("✅ UNBINDED SUCCESSFULLY!");
+        } else {
+            alert("❌ Identity Verification Failed! (Wrong Security Code or OTP)");
+        }
+    }
+</script>
+</body>
+</html>
